@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, Security & Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements*.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      # ── Flake8 ──────────────────────────────────────────────
+      - name: "Flake8: style check"
+        run: flake8 app/
+
+      # ── Radon CC ────────────────────────────────────────────
+      - name: "Radon CC: cyclomatic complexity (threshold < 10)"
+        run: |
+          echo "=== Cyclomatic Complexity Report ==="
+          radon cc app/ -a -s
+          echo ""
+          python3 << 'PYEOF'
+          import subprocess, json, sys
+
+          proc = subprocess.run(
+              ["radon", "cc", "app/", "-j"],
+              capture_output=True, text=True,
+          )
+          data = json.loads(proc.stdout) if proc.stdout.strip() else {}
+          fails = []
+          for fname, blocks in data.items():
+              for b in blocks:
+                  if b["complexity"] >= 10:
+                      fails.append(
+                          f"  {fname}:{b['lineno']} {b['name']} (CC={b['complexity']})"
+                      )
+          if fails:
+              print("FAIL: functions with CC >= 10:")
+              print("\n".join(fails))
+              sys.exit(1)
+          print("PASS: all functions have CC < 10")
+          PYEOF
+
+      # ── Radon MI ────────────────────────────────────────────
+      - name: "Radon MI: maintainability index (threshold > 25)"
+        run: |
+          echo "=== Maintainability Index Report ==="
+          radon mi app/ -s
+          echo ""
+          python3 << 'PYEOF'
+          import subprocess, json, sys
+
+          proc = subprocess.run(
+              ["radon", "mi", "app/", "-j"],
+              capture_output=True, text=True,
+          )
+          data = json.loads(proc.stdout) if proc.stdout.strip() else {}
+          fails = []
+          for fname, info in data.items():
+              mi = info["mi"] if isinstance(info, dict) else info
+              if mi <= 25:
+                  fails.append(f"  {fname} (MI={mi:.2f})")
+          if fails:
+              print("FAIL: modules with MI <= 25:")
+              print("\n".join(fails))
+              sys.exit(1)
+          print("PASS: all modules have MI > 25")
+          PYEOF
+
+      # ── Bandit ──────────────────────────────────────────────
+      - name: "Bandit: security scan (0 high-severity findings)"
+        run: bandit -r app/ --severity-level high
+
+      # ── Pytest + Coverage ───────────────────────────────────
+      - name: "Pytest: tests + coverage (>= 75%)"
+        run: pytest --cov=app --cov-fail-under=75 --cov-report=term-missing
