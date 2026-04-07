@@ -20,7 +20,9 @@ def db_session() -> Session:
         poolclass=StaticPool,
         future=True,
     )
-    TestingSessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False, future=True)
+    TestingSessionLocal = sessionmaker(
+        bind=engine, autocommit=False, autoflush=False, future=True
+    )
     Base.metadata.create_all(bind=engine)
     session = TestingSessionLocal()
     try:
@@ -48,6 +50,9 @@ def client(db_session: Session, mailer_store: dict) -> TestClient:
 
         def send_otp(self, to_email: str, otp: str) -> None:
             mailer_store[to_email] = otp
+
+        def send_match_notification(self, to_email: str, partners) -> None:
+            pass
 
     def override_get_mailer():
         return FakeMailer()

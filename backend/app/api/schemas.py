@@ -71,3 +71,30 @@ class ProfileUpdateRequest(BaseModel):
                 raise ValueError("Interest too long (max 50)")
             cleaned.append(item)
         return cleaned
+
+
+class PartnerInfo(BaseModel):
+    email: str
+    name: Optional[str]
+
+
+class MatchResponse(BaseModel):
+    id: int
+    week: str
+    partners: List[PartnerInfo]
+    created_at: datetime
+
+
+class MatchRunResponse(BaseModel):
+    week: str
+    pairs_count: int
+
+
+class FeedbackRequest(BaseModel):
+    comment: Optional[str] = Field(default=None, max_length=1000)
+
+
+class FeedbackResponse(BaseModel):
+    match_id: int
+    confirmed_at: datetime
+    comment: Optional[str]
