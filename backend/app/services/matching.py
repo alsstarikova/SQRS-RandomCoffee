@@ -121,17 +121,23 @@ class MatchingService:
     def _notify(self, matches: list) -> None:
         if not self.mailer:
             return
-        for match, u1, u2, u3 in matches:
+        for _, u1, u2, u3 in matches:
             members = [u for u in (u1, u2, u3) if u is not None]
-            for i, user in enumerate(members):
-                partners = [m for j, m in enumerate(members) if j != i]
-                try:
-                    self.mailer.send_match_notification(
-                        to_email=user.email,
-                        partners=[(p.email, p.name) for p in partners],
-                    )
-                except Exception:
-                    pass
+            self._notify_members(members)
+
+    def _notify_members(self, members: list[User]) -> None:
+        for i, user in enumerate(members):
+            partners = [m for j, m in enumerate(members) if j != i]
+            self._send_notification(user, partners)
+
+    def _send_notification(self, user: User, partners: list[User]) -> None:
+        try:
+            self.mailer.send_match_notification(  # type: ignore[union-attr]
+                to_email=user.email,
+                partners=[(p.email, p.name) for p in partners],
+            )
+        except Exception:
+            pass
 
     @staticmethod
     def _make_groups(users: list[User], past_pairs: set[frozenset]) -> list[_Group]:
