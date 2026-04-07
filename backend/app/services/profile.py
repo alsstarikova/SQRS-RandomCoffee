@@ -24,17 +24,13 @@ class ProfileService:
 
         if interests is not None:
             cleaned = [
-                self._normalize_interest(item)
-                for item in interests
-                if item.strip()
+                self._normalize_interest(item) for item in interests if item.strip()
             ]
             unique_names = list(dict.fromkeys(cleaned))
             resolved: list[Interest] = []
             for name_item in unique_names:
                 interest = (
-                    self.db.query(Interest)
-                    .filter(Interest.name == name_item)
-                    .first()
+                    self.db.query(Interest).filter(Interest.name == name_item).first()
                 )
                 if not interest:
                     interest = Interest(name=name_item)

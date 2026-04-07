@@ -64,7 +64,9 @@ class Mailer:
             intro = "This week your conversation partner is:"
         else:
             subject = "Your Random Coffee this week — a group meeting!"
-            intro = "This week you have a group meeting! Your conversation partners are:"
+            intro = (
+                "This week you have a group meeting! Your conversation partners are:"
+            )
 
         partner_lines = "\n".join(
             f"  • {name or email} — {email}" for email, name in partners

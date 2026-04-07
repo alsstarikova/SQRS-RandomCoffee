@@ -4,13 +4,8 @@ from sqlalchemy.orm import Session
 
 from app.core import EmailSendError, Mailer
 from app.core.auth import create_access_token
-from app.core.security import (
-    generate_otp,
-    new_otp_hash,
-    otp_expiration,
-    utcnow,
-    verify_otp,
-)
+from app.core.security import (generate_otp, new_otp_hash, otp_expiration,
+                               utcnow, verify_otp)
 from app.db import User
 
 

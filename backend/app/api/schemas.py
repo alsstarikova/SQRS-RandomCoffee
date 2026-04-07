@@ -81,7 +81,7 @@ class PartnerInfo(BaseModel):
 class MatchResponse(BaseModel):
     id: int
     week: str
-    partners: List[PartnerInfo]  
+    partners: List[PartnerInfo]
     created_at: datetime
 
 

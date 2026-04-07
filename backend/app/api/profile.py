@@ -1,10 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import (
-    get_current_user,
-    get_current_user_allow_inactive,
-)
+from app.api.deps import get_current_user, get_current_user_allow_inactive
 from app.api.schemas import ProfileResponse, ProfileUpdateRequest
 from app.db import User
 from app.db.session import get_db

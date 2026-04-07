@@ -20,7 +20,9 @@ def db_session() -> Session:
         poolclass=StaticPool,
         future=True,
     )
-    TestingSessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False, future=True)
+    TestingSessionLocal = sessionmaker(
+        bind=engine, autocommit=False, autoflush=False, future=True
+    )
     Base.metadata.create_all(bind=engine)
     session = TestingSessionLocal()
     try:

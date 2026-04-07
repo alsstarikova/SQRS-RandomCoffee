@@ -19,5 +19,7 @@ def test_login_invalid_otp(client, mailer_store):
 
 def test_invalid_otp(client):
     client.post("/login", json={"email": "wrongotp@example.com"})
-    login = client.post("/login", json={"email": "wrongotp@example.com", "otp": "000000"})
+    login = client.post(
+        "/login", json={"email": "wrongotp@example.com", "otp": "000000"}
+    )
     assert login.status_code == 400

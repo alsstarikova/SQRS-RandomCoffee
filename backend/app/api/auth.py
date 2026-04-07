@@ -5,12 +5,8 @@ from app.api.deps import get_mailer
 from app.api.schemas import LoginRequest, LoginResponse
 from app.core import Mailer
 from app.db.session import get_db
-from app.services.auth import (
-    AuthService,
-    AuthServiceError,
-    OtpError,
-    RegistrationClosedError,
-)
+from app.services.auth import (AuthService, AuthServiceError, OtpError,
+                               RegistrationClosedError)
 
 router = APIRouter(tags=["auth"])
 

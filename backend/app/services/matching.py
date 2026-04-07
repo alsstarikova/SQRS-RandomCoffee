@@ -38,7 +38,7 @@ class MatchingService:
 
         users = (
             self.db.query(User)
-            .filter(User.is_active == True, User.is_verified == True)  
+            .filter(User.is_active == True, User.is_verified == True)
             .all()
         )
         if len(users) < 2:
@@ -76,7 +76,7 @@ class MatchingService:
                             partners=[(p.email, p.name) for p in partners],
                         )
                     except Exception:
-                        pass 
+                        pass
 
         return [m for m, *_ in matches]
 
@@ -92,12 +92,14 @@ class MatchingService:
 
         for i, u in enumerate(users):
             interests_u = {interest.name for interest in u.interests}
-            for v in users[i + 1:]:
+            for v in users[i + 1 :]:
                 is_repeat = frozenset({u.id, v.id}) in past_pairs
                 if is_repeat:
                     weight = _WEIGHT_REPEAT
                 else:
-                    common = len(interests_u & {interest.name for interest in v.interests})
+                    common = len(
+                        interests_u & {interest.name for interest in v.interests}
+                    )
                     weight = _WEIGHT_FRESH_BASE + common
                 G.add_edge(u.id, v.id, weight=weight)
 

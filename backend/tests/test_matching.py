@@ -20,6 +20,7 @@ def _register(client, mailer_store, email: str) -> str:
 
 # ── run matching ──────────────────────────────────────────────────────────────
 
+
 def test_run_matching_creates_pairs(client, mailer_store, db_session):
     token_a = _register(client, mailer_store, "alice@example.com")
     _register(client, mailer_store, "bob@example.com")
@@ -54,6 +55,7 @@ def test_run_matching_requires_auth(client):
 
 
 # ── тройка при нечётном числе ─────────────────────────────────────────────────
+
 
 def test_odd_users_form_triple(client, mailer_store, db_session):
     token_a = _register(client, mailer_store, "t1@example.com")
@@ -93,7 +95,9 @@ def test_triple_all_three_can_confirm(client, mailer_store, db_session):
     match = db_session.query(Match).first()
 
     for token in (token_a, token_b, token_c):
-        resp = client.post(f"/matching/{match.id}/confirm", json={}, headers=_headers(token))
+        resp = client.post(
+            f"/matching/{match.id}/confirm", json={}, headers=_headers(token)
+        )
         assert resp.status_code == 200
 
     feedbacks = db_session.query(MeetingFeedback).all()
@@ -101,6 +105,7 @@ def test_triple_all_three_can_confirm(client, mailer_store, db_session):
 
 
 # ── get my matches ─────────────────────────────────────────────────────────────
+
 
 def test_get_my_matches_pair(client, mailer_store):
     token_a = _register(client, mailer_store, "ma@example.com")
@@ -117,6 +122,7 @@ def test_get_my_matches_pair(client, mailer_store):
 
 
 # ── confirm meeting ────────────────────────────────────────────────────────────
+
 
 def test_confirm_meeting(client, mailer_store, db_session):
     token_a = _register(client, mailer_store, "conf_a@example.com")
@@ -143,7 +149,9 @@ def test_confirm_meeting_no_comment(client, mailer_store, db_session):
     client.post("/matching/run", headers=_headers(token_a))
     match = db_session.query(Match).first()
 
-    resp = client.post(f"/matching/{match.id}/confirm", json={}, headers=_headers(token_a))
+    resp = client.post(
+        f"/matching/{match.id}/confirm", json={}, headers=_headers(token_a)
+    )
     assert resp.status_code == 200
     assert resp.json()["comment"] is None
 
@@ -156,7 +164,9 @@ def test_confirm_meeting_twice_returns_409(client, mailer_store, db_session):
     match = db_session.query(Match).first()
 
     client.post(f"/matching/{match.id}/confirm", json={}, headers=_headers(token_a))
-    second = client.post(f"/matching/{match.id}/confirm", json={}, headers=_headers(token_a))
+    second = client.post(
+        f"/matching/{match.id}/confirm", json={}, headers=_headers(token_a)
+    )
     assert second.status_code == 409
 
 
@@ -168,16 +178,24 @@ def test_confirm_meeting_wrong_user_returns_403(client, mailer_store, db_session
     match = db_session.query(Match).first()
 
     token_c = _register(client, mailer_store, "wr_c@example.com")
-    resp = client.post(f"/matching/{match.id}/confirm", json={}, headers=_headers(token_c))
+    resp = client.post(
+        f"/matching/{match.id}/confirm", json={}, headers=_headers(token_c)
+    )
     assert resp.status_code == 403
 
 
 def test_confirm_nonexistent_match_returns_404(client, mailer_store):
     token = _register(client, mailer_store, "ghost@example.com")
-    assert client.post("/matching/9999/confirm", json={}, headers=_headers(token)).status_code == 404
+    assert (
+        client.post(
+            "/matching/9999/confirm", json={}, headers=_headers(token)
+        ).status_code
+        == 404
+    )
 
 
 # ── no repeat pairs ────────────────────────────────────────────────────────────
+
 
 def test_matching_avoids_repeat_pairs(client, mailer_store, db_session):
     token_a = _register(client, mailer_store, "rep_a@example.com")
