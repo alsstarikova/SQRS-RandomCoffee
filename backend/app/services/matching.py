@@ -38,7 +38,7 @@ class MatchingService:
 
         users = (
             self.db.query(User)
-            .filter(User.is_active == True, User.is_verified == True)
+            .filter(User.is_active.is_(True), User.is_verified.is_(True))
             .all()
         )
         if len(users) < 2:
