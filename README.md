@@ -57,12 +57,41 @@ The API is available at:
 - **Swagger UI**: http://localhost:8000/docs
 - **OpenAPI JSON**: http://localhost:8000/openapi.json
 
-### Docker
+### Docker (recommended for local development)
+
+Docker Compose starts the backend together with **Mailpit** — a lightweight local SMTP server that catches all outgoing emails and displays them in a browser UI instead of delivering them to real inboxes. No email credentials required.
 
 ```bash
 # From repository root
-docker-compose up --build
+docker compose up --build
 ```
+
+Once running, the following services are available:
+
+| Service | URL |
+|---------|-----|
+| API | http://localhost:8000 |
+| Swagger UI | http://localhost:8000/docs |
+| Mailpit (caught emails) | http://localhost:8025 |
+
+#### Logging in during local development
+
+Because real email delivery is disabled, retrieve OTP codes from the Mailpit inbox:
+
+1. Request an OTP — the email will appear in Mailpit:
+   ```bash
+   curl -X POST http://localhost:8000/login \
+     -H "Content-Type: application/json" \
+     -d '{"email": "user@example.com"}'
+   ```
+2. Open http://localhost:8025, find the message, and copy the 6-digit code.
+3. Exchange the OTP for an access token:
+   ```bash
+   curl -X POST http://localhost:8000/login \
+     -H "Content-Type: application/json" \
+     -d '{"email": "user@example.com", "otp": "123456"}'
+   ```
+
 
 ## Quality Gates
 

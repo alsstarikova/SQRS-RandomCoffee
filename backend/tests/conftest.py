@@ -49,6 +49,9 @@ def client(db_session: Session, mailer_store: dict) -> TestClient:
         def send_otp(self, to_email: str, otp: str) -> None:
             mailer_store[to_email] = otp
 
+        def send_match_notification(self, to_email: str, partners) -> None:
+            pass
+
     def override_get_mailer():
         return FakeMailer()
 
