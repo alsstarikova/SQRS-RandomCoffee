@@ -6,7 +6,7 @@ import networkx as nx
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.core.emailer import Mailer
+from app.core.emailer import Mailer, PartnerData
 from app.db.models import Match, MeetingFeedback, User
 
 _WEIGHT_FRESH_BASE = 10
@@ -131,10 +131,23 @@ class MatchingService:
             self._send_notification(user, partners)
 
     def _send_notification(self, user: User, partners: list[User]) -> None:
+        my_interests = {i.name for i in user.interests}
         try:
             self.mailer.send_match_notification(  # type: ignore[union-attr]
                 to_email=user.email,
-                partners=[(p.email, p.name) for p in partners],
+                partners=[
+                    PartnerData(
+                        email=p.email,
+                        name=p.name,
+                        about=p.about,
+                        telegram=p.telegram,
+                        interests=[i.name for i in p.interests],
+                        common_interests=sorted(
+                            my_interests & {i.name for i in p.interests}
+                        ),
+                    )
+                    for p in partners
+                ],
             )
         except Exception:
             pass

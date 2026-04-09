@@ -42,13 +42,24 @@ def get_my_matches(
     service = MatchingService(db=db)
     matches = service.get_my_matches(current_user.id)
 
+    my_interests = {i.name for i in current_user.interests}
+
     result = []
     for match in matches:
         all_users = [
             u for u in (match.user1, match.user2, match.user3) if u is not None
         ]
         partners = [
-            PartnerInfo(email=u.email, name=u.name)
+            PartnerInfo(
+                email=u.email,
+                name=u.name,
+                about=u.about,
+                telegram=u.telegram,
+                interests=[i.name for i in u.interests],
+                common_interests=sorted(
+                    my_interests & {i.name for i in u.interests}
+                ),
+            )
             for u in all_users
             if u.id != current_user.id
         ]
