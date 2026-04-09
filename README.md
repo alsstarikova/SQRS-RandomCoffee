@@ -59,7 +59,7 @@ The API is available at:
 
 ### Docker (recommended for local development)
 
-Docker Compose starts the backend together with **Mailpit** — a lightweight local SMTP server that catches all outgoing emails and displays them in a browser UI instead of delivering them to real inboxes. No email credentials required.
+Docker Compose starts the backend and all required services.
 
 ```bash
 # From repository root
@@ -72,25 +72,25 @@ Once running, the following services are available:
 |---------|-----|
 | API | http://localhost:8000 |
 | Swagger UI | http://localhost:8000/docs |
-| Mailpit (caught emails) | http://localhost:8025 |
 
-#### Logging in during local development
+### Configuring Mail.ru SMTP
 
-Because real email delivery is disabled, retrieve OTP codes from the Mailpit inbox:
+To send emails from the application (e.g. OTP codes), configure Mail.ru SMTP:
 
-1. Request an OTP — the email will appear in Mailpit:
-   ```bash
-   curl -X POST http://localhost:8000/login \
-     -H "Content-Type: application/json" \
-     -d '{"email": "user@example.com"}'
-   ```
-2. Open http://localhost:8025, find the message, and copy the 6-digit code.
-3. Exchange the OTP for an access token:
-   ```bash
-   curl -X POST http://localhost:8000/login \
-     -H "Content-Type: application/json" \
-     -d '{"email": "user@example.com", "otp": "123456"}'
-   ```
+#### 1. Create an Application Password in Mail.ru
+
+1. Open https://id.mail.ru/security
+2. In the security section, find **"Passwords for external applications"** and create a password for the application (e.g. `"SQRS project"`). Select **SMTP** to enable sending emails.
+3. Copy the generated password — you will need it in the next step.
+
+#### 2. Write the settings in `.env`
+
+```env
+SMTP_HOST=smtp.mail.ru
+SMTP_PORT=465
+SMTP_USER=your@mail.ru
+SMTP_PASSWORD=<application password from step 1>
+```
 
 
 ## Quality Gates

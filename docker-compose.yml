@@ -7,21 +7,5 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
-    environment:
-      SMTP_HOST: mailpit
-      SMTP_PORT: 1025
-      SMTP_USER: test
-      SMTP_PASSWORD: test
-      SMTP_FROM: noreply@randomcoffee.local
-      SMTP_USE_SSL: "false"
-      SMTP_USE_TLS: "false"
     volumes:
       - ./backend:/app
-    depends_on:
-      - mailpit
-
-  mailpit:
-    image: axllent/mailpit
-    ports:
-      - "1025:1025"   
-      - "8025:8025"   
