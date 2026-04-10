@@ -1,13 +1,9 @@
-def _get_token(client, mailer_store, email: str = "profile@example.com") -> str:
-    client.post("/login", json={"email": email})
-    otp = mailer_store[email]
-    login = client.post("/login", json={"email": email, "otp": otp})
-    return login.json()["access_token"]
+from tests.utils import auth_headers
 
 
-def test_profile_update_and_get(client, mailer_store):
-    token = _get_token(client, mailer_store)
-    headers = {"Authorization": f"Bearer {token}"}
+def test_profile_update_and_get(client, create_user):
+    token = create_user("profile@example.com")
+    headers = auth_headers(token)
 
     update = client.patch(
         "/profile",
@@ -29,9 +25,9 @@ def test_profile_update_and_get(client, mailer_store):
     assert get_profile.json()["telegram"] == "@anna_1"
 
 
-def test_deactivate_account(client, mailer_store):
-    token = _get_token(client, mailer_store, email="deact@example.com")
-    headers = {"Authorization": f"Bearer {token}"}
+def test_deactivate_account(client, create_user):
+    token = create_user("deact@example.com")
+    headers = auth_headers(token)
 
     deactivate = client.post("/profile/deactivate", headers=headers)
     assert deactivate.status_code == 200
@@ -40,9 +36,9 @@ def test_deactivate_account(client, mailer_store):
     assert after.status_code == 403
 
 
-def test_activate_account(client, mailer_store):
-    token = _get_token(client, mailer_store, email="react@example.com")
-    headers = {"Authorization": f"Bearer {token}"}
+def test_activate_account(client, create_user):
+    token = create_user("react@example.com")
+    headers = auth_headers(token)
 
     deactivate = client.post("/profile/deactivate", headers=headers)
     assert deactivate.status_code == 200
@@ -54,9 +50,9 @@ def test_activate_account(client, mailer_store):
     assert profile.status_code == 200
 
 
-def test_invalid_telegram_validation(client, mailer_store):
-    token = _get_token(client, mailer_store, email="badtelegram@example.com")
-    headers = {"Authorization": f"Bearer {token}"}
+def test_invalid_telegram_validation(client, create_user):
+    token = create_user("badtelegram@example.com")
+    headers = auth_headers(token)
 
     update = client.patch(
         "/profile",
@@ -66,9 +62,9 @@ def test_invalid_telegram_validation(client, mailer_store):
     assert update.status_code == 422
 
 
-def test_invalid_interest_validation(client, mailer_store):
-    token = _get_token(client, mailer_store, email="badinterest@example.com")
-    headers = {"Authorization": f"Bearer {token}"}
+def test_invalid_interest_validation(client, create_user):
+    token = create_user("badinterest@example.com")
+    headers = auth_headers(token)
 
     update = client.patch(
         "/profile",
