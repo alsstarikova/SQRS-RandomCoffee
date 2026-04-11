@@ -76,6 +76,10 @@ class ProfileUpdateRequest(BaseModel):
 class PartnerInfo(BaseModel):
     email: str
     name: Optional[str]
+    about: Optional[str]
+    telegram: Optional[str]
+    interests: List[str]
+    common_interests: List[str]
 
 
 class MatchResponse(BaseModel):

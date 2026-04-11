@@ -4,11 +4,43 @@ from typing import Optional
 
 from .settings import Settings
 
-Partners = list[tuple[str, Optional[str]]]
+
+class PartnerData:
+    def __init__(
+        self,
+        email: str,
+        name: Optional[str],
+        about: Optional[str],
+        telegram: Optional[str],
+        interests: list[str],
+        common_interests: list[str],
+    ) -> None:
+        self.email = email
+        self.name = name
+        self.about = about
+        self.telegram = telegram
+        self.interests = interests
+        self.common_interests = common_interests
+
+
+Partners = list[PartnerData]
 
 
 class EmailSendError(Exception):
     pass
+
+
+def _format_partner(p: "PartnerData") -> str:
+    lines = [f"  • {p.name or p.email} — {p.email}"]
+    if p.telegram:
+        lines.append(f"    Telegram: {p.telegram}")
+    if p.about:
+        lines.append(f"    About: {p.about}")
+    if p.interests:
+        lines.append(f"    Interests: {', '.join(p.interests)}")
+    if p.common_interests:
+        lines.append(f"    Common interests: {', '.join(p.common_interests)}")
+    return "\n".join(lines)
 
 
 class Mailer:
@@ -77,8 +109,8 @@ class Mailer:
             subject = "Your Random Coffee this week — a group meeting!"
             intro = "This week you have a group meeting! Your conversation partners are:"
 
-        partner_lines = "\n".join(
-            f"  • {name or email} — {email}" for email, name in partners
+        partner_lines = "\n\n".join(
+            _format_partner(p) for p in partners
         )
 
         message = EmailMessage()
