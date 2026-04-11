@@ -59,7 +59,7 @@ The API is available at:
 
 ### Docker (recommended for local development)
 
-Docker Compose starts the backend and all required services.
+Docker Compose starts the backend and the Streamlit frontend.
 
 ```bash
 # From repository root
@@ -70,6 +70,7 @@ Once running, the following services are available:
 
 | Service | URL |
 |---------|-----|
+| Streamlit UI | http://localhost:8501 |
 | API | http://localhost:8000 |
 | Swagger UI | http://localhost:8000/docs |
 
