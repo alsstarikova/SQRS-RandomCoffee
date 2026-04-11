@@ -25,33 +25,36 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Cache pip packages
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          poetry config virtualenvs.in-project true
+
+      - name: Cache Poetry venv
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements*.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
+          path: backend/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('backend/poetry.lock') }}
+          restore-keys: ${{ runner.os }}-poetry-
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-dev.txt
+        run: poetry install --no-interaction --no-ansi --no-root
 
       # ── Flake8 ──────────────────────────────────────────────
       - name: "Flake8: style check"
-        run: flake8 app/
+        run: poetry run flake8 app/
 
       # ── Radon CC ────────────────────────────────────────────
       - name: "Radon CC: cyclomatic complexity (threshold < 10)"
         run: |
           echo "=== Cyclomatic Complexity Report ==="
-          radon cc app/ -a -s
+          poetry run radon cc app/ -a -s
           echo ""
-          python3 << 'PYEOF'
+          poetry run python3 << 'PYEOF'
           import subprocess, json, sys
 
           proc = subprocess.run(
-              ["radon", "cc", "app/", "-j"],
+              ["poetry", "run", "radon", "cc", "app/", "-j"],
               capture_output=True, text=True,
           )
           data = json.loads(proc.stdout) if proc.stdout.strip() else {}
@@ -73,13 +76,13 @@ jobs:
       - name: "Radon MI: maintainability index (threshold > 25)"
         run: |
           echo "=== Maintainability Index Report ==="
-          radon mi app/ -s
+          poetry run radon mi app/ -s
           echo ""
-          python3 << 'PYEOF'
+          poetry run python3 << 'PYEOF'
           import subprocess, json, sys
 
           proc = subprocess.run(
-              ["radon", "mi", "app/", "-j"],
+              ["poetry", "run", "radon", "mi", "app/", "-j"],
               capture_output=True, text=True,
           )
           data = json.loads(proc.stdout) if proc.stdout.strip() else {}
@@ -97,8 +100,8 @@ jobs:
 
       # ── Bandit ──────────────────────────────────────────────
       - name: "Bandit: security scan (0 high-severity findings)"
-        run: bandit -r app/ --severity-level high
+        run: poetry run bandit -r app/ --severity-level high
 
       # ── Pytest + Coverage ───────────────────────────────────
       - name: "Pytest: tests + coverage (>= 75%)"
-        run: pytest --cov=app --cov-fail-under=75 --cov-report=term-missing
+        run: poetry run pytest --cov=app --cov-fail-under=75 --cov-report=term-missing
