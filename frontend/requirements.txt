@@ -1,3 +1,2 @@
 streamlit
 requests
-streamlit-js-eval>=0.1.5
