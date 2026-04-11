@@ -37,7 +37,16 @@ def mailer_store() -> dict:
 
 
 @pytest.fixture()
-def client(db_session: Session, mailer_store: dict) -> TestClient:
+def notification_store() -> list:
+    return []
+
+
+@pytest.fixture()
+def client(
+    db_session: Session,
+    mailer_store: dict,
+    notification_store: list,
+) -> TestClient:
     def override_get_db():
         try:
             yield db_session
@@ -51,8 +60,13 @@ def client(db_session: Session, mailer_store: dict) -> TestClient:
         def send_otp(self, to_email: str, otp: str) -> None:
             mailer_store[to_email] = otp
 
-        def send_match_notification(self, to_email: str, partners) -> None:
-            pass
+        def send_match_notification(
+            self, to_email: str, partners
+        ) -> None:
+            notification_store.append({
+                "to": to_email,
+                "partners": partners,
+            })
 
     def override_get_mailer():
         return FakeMailer()
@@ -62,3 +76,16 @@ def client(db_session: Session, mailer_store: dict) -> TestClient:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def create_user(client, mailer_store):
+    """Factory: register + login a user via OTP, return token."""
+    def _factory(email: str) -> str:
+        client.post("/login", json={"email": email})
+        otp = mailer_store[email]
+        resp = client.post(
+            "/login", json={"email": email, "otp": otp}
+        )
+        return resp.json()["access_token"]
+    return _factory
